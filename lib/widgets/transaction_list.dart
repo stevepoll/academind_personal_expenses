@@ -5,55 +5,65 @@ import 'package:personal_expenses/models/transaction.dart';
 
 class TransactionList extends StatelessWidget {
   final List<Transaction> txns;
+  final Function deleteTxn;
 
-  TransactionList(this.txns);
+  TransactionList(this.txns, this.deleteTxn);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 300,
-      child: ListView.builder(
-        itemBuilder: (ctx, index) {
-          return Card(
-            child: Row(
+      height: 450,
+      child: txns.isEmpty
+          ? Column(
               children: [
+                Text(
+                  'No Transactions Yet!',
+                  style: Theme.of(context).textTheme.headline6,
+                ),
+                SizedBox(height: 10),
                 Container(
-                  padding: EdgeInsets.all(10),
-                  margin: EdgeInsets.symmetric(
-                    vertical: 10,
-                    horizontal: 15,
-                  ),
-                  decoration: BoxDecoration(
-                    border: Border.all(width: 2, color: Colors.purple),
-                  ),
-                  child: Text(
-                    '\$${txns[index].amount.toStringAsFixed(2)}',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: Colors.purple,
-                    ),
+                  height: 200,
+                  child: Image.asset(
+                    'assets/images/waiting.png',
+                    fit: BoxFit.cover,
                   ),
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      txns[index].title,
-                      style: TextStyle(fontSize: 16),
+              ],
+            )
+          : ListView.builder(
+              itemBuilder: (ctx, index) {
+                return Card(
+                  margin: EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+                  elevation: 5,
+                  child: ListTile(
+                    contentPadding: EdgeInsets.all(10),
+                    leading: CircleAvatar(
+                      radius: 30,
+                      child: Padding(
+                        padding: EdgeInsets.all(6),
+                        child: FittedBox(
+                          child: Text('\$${txns[index].amount}'),
+                        ),
+                      ),
                     ),
-                    Text(
+                    title: Text(
+                      txns[index].title,
+                      style: Theme.of(ctx).textTheme.headline6,
+                    ),
+                    subtitle: Text(
                       DateFormat.yMMMMd().format(txns[index].date),
                       style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
-                  ],
-                ),
-              ],
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () => deleteTxn(txns[index].id),
+                      color: Theme.of(context).errorColor,
+                    ),
+                  ),
+                );
+              },
+              itemCount: txns.length,
             ),
-          );
-        },
-        itemCount: txns.length,
-      ),
     );
   }
 }
