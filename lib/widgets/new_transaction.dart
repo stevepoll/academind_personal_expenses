@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -16,14 +19,11 @@ class _NewTransactionState extends State<NewTransaction> {
   DateTime _selectedDate;
 
   void _handleSubmit() {
-    if (_titleController.text.isEmpty ||
-        _amountController.text.isEmpty ||
-        _selectedDate == null) {
+    if (_titleController.text.isEmpty || _amountController.text.isEmpty || _selectedDate == null) {
       return;
     }
 
-    final title = _titleController.text,
-        amount = double.parse(_amountController.text);
+    final title = _titleController.text, amount = double.parse(_amountController.text);
 
     widget.addNewTxn(
       title,
@@ -52,6 +52,10 @@ class _NewTransactionState extends State<NewTransaction> {
 
   @override
   Widget build(BuildContext context) {
+    final _chooseDateText = Text(
+      'Choose Date',
+      style: TextStyle(fontWeight: FontWeight.bold),
+    );
     return SingleChildScrollView(
       child: Card(
         elevation: 5,
@@ -82,18 +86,18 @@ class _NewTransactionState extends State<NewTransaction> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: Text(_selectedDate == null
-                          ? 'No Date Chosen'
-                          : DateFormat.yMMMEd().format(_selectedDate)),
+                      child: Text(_selectedDate == null ? 'No Date Chosen' : DateFormat.yMMMEd().format(_selectedDate)),
                     ),
-                    FlatButton(
-                      child: Text(
-                        'Choose Date',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      onPressed: _presentDatePicker,
-                      textColor: Theme.of(context).primaryColor,
-                    ),
+                    Platform.isIOS
+                        ? CupertinoButton(
+                            child: _chooseDateText,
+                            onPressed: _presentDatePicker,
+                          )
+                        : FlatButton(
+                            child: _chooseDateText,
+                            onPressed: _presentDatePicker,
+                            textColor: Theme.of(context).primaryColor,
+                          ),
                   ],
                 ),
               ),
