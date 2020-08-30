@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+// import 'package:flutter/services.dart';
 
 import 'package:personal_expenses/models/transaction.dart';
 import 'package:personal_expenses/widgets/chart.dart';
@@ -6,6 +7,8 @@ import 'package:personal_expenses/widgets/new_transaction.dart';
 import 'package:personal_expenses/widgets/transaction_list.dart';
 
 void main() {
+  // WidgetsFlutterBinding.ensureInitialized();
+  // SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(MyApp());
 }
 
@@ -65,6 +68,8 @@ class _MyHomePageState extends State<MyHomePage> {
     ),
   ];
 
+  bool _showChart = false;
+
   List<Transaction> get _recentTxns {
     return _txns
         .where((txn) =>
@@ -99,22 +104,67 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
+
+    final appBar = AppBar(
+      title: Text('Personal Expenses'),
+      actions: [
+        IconButton(
+          icon: Icon(Icons.add),
+          onPressed: () => _startAddNewTransaction(context),
+        )
+      ],
+    );
+
+    final availableHeight = mediaQuery.size.height -
+        appBar.preferredSize.height -
+        mediaQuery.padding.top;
+
+    final switchRow = Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text('Show chart'),
+        Switch(
+          value: _showChart,
+          onChanged: (val) {
+            setState(() {
+              _showChart = val;
+            });
+          },
+        ),
+      ],
+    );
+
+    final txnListWidget = Container(
+      height: availableHeight * (0.7),
+      child: TransactionList(_txns, _deleteTransaction),
+    );
+
+    final chartWidget = Container(
+      height: availableHeight * (isLandscape ? 0.7 : 0.3),
+      child: Chart(_recentTxns),
+    );
+
+    List<Widget> landscapeUI() {
+      return [
+        switchRow,
+        _showChart ? chartWidget : txnListWidget,
+      ];
+    }
+
+    List<Widget> portraitUI() {
+      return [
+        chartWidget,
+        txnListWidget,
+      ];
+    }
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Personal Expenses'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () => _startAddNewTransaction(context),
-          )
-        ],
-      ),
+      appBar: appBar,
       body: SingleChildScrollView(
         child: Column(
-          children: [
-            Chart(_recentTxns),
-            TransactionList(_txns, _deleteTransaction),
-          ],
+          children: isLandscape ? landscapeUI() : portraitUI(),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
